@@ -1,0 +1,4 @@
+.zcode-site/
+node_modules/
+_preview_test.html
+*.log

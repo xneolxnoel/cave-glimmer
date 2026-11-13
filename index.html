@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>洞窟微光 · Cave Glimmer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #060302; }
+  body {
+    font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+    color: #cfd6e4;
+    -webkit-user-select: none; user-select: none;
+  }
+  #stage { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
+  canvas { display: block; box-shadow: 0 0 80px rgba(0,0,0,.9); }
+
+  /* ---------- 通用 UI ---------- */
+  .ui { position: absolute; z-index: 5; }
+  #hint {
+    top: 5.5%; left: 50%; transform: translateX(-50%);
+    font-size: 17px; letter-spacing: 4px; color: rgba(232, 212, 168, .85);
+    text-shadow: 0 0 14px rgba(255, 200, 120, .35);
+    opacity: 0; transition: opacity 1.2s ease; pointer-events: none;
+  }
+  #hint.show { opacity: 1; }
+
+  /* ---------- 覆盖层 ---------- */
+  .overlay {
+    position: absolute; inset: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at center, rgba(20, 12, 6, .34) 0%, rgba(10, 6, 3, .78) 100%);
+    opacity: 0; pointer-events: none; transition: opacity .6s ease;
+  }
+  .overlay.show { opacity: 1; pointer-events: auto; }
+  .panel { text-align: center; padding: 48px 64px; }
+  .title {
+    font-size: 52px; font-weight: 300; letter-spacing: 18px; text-indent: 18px;
+    color: #e8d5a8; text-shadow: 0 0 30px rgba(255, 200, 110, .4), 0 0 90px rgba(255, 170, 60, .18);
+    margin-bottom: 14px;
+  }
+  .title.small { font-size: 38px; letter-spacing: 10px; text-indent: 10px; }
+  .subtitle { font-size: 16px; letter-spacing: 6px; color: #9aa3b8; margin-bottom: 40px; }
+  .keys { font-size: 14px; color: #8d96ab; letter-spacing: 2px; margin-bottom: 42px; }
+  .keys span {
+    display: inline-block; padding: 3px 10px; margin: 0 4px;
+    border: 1px solid rgba(160, 170, 195, .3); border-radius: 5px;
+    color: #b8c1d4; font-size: 13px; background: rgba(255,255,255,.03);
+  }
+  .keys i { display: inline-block; width: 26px; }
+  button {
+    font-family: inherit; cursor: pointer;
+    padding: 13px 46px; font-size: 17px; letter-spacing: 8px; text-indent: 8px;
+    color: #140f06; background: linear-gradient(180deg, #f0d79a, #d9b465);
+    border: none; border-radius: 4px;
+    box-shadow: 0 0 24px rgba(230, 190, 110, .25), inset 0 1px 0 rgba(255,255,255,.4);
+    transition: all .2s;
+  }
+  button:hover { box-shadow: 0 0 38px rgba(240, 200, 120, .45), inset 0 1px 0 rgba(255,255,255,.4); transform: translateY(-1px); }
+  button:active { transform: translateY(1px); }
+  button.locked {
+    background: none; color: #6a7183; border: 1px solid rgba(120, 128, 148, .35);
+    box-shadow: none; cursor: default; letter-spacing: 4px;
+  }
+  button.locked:hover { transform: none; box-shadow: none; background: rgba(255,255,255,.02); }
+  .btnrow { display: flex; gap: 18px; justify-content: center; }
+  .time { font-size: 15px; letter-spacing: 3px; color: #a08c62; margin-bottom: 40px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="game"></canvas>
+
+  <div id="hint" class="ui">别着急 · 慢慢走向那盏光</div>
+
+  <div id="menu" class="overlay show">
+    <div class="panel">
+      <div class="title">洞窟微光</div>
+      <div class="subtitle">CAVE GLIMMER · 第一关 · 光在等你</div>
+      <div class="keys">
+        <span>A / D 或 ← / →</span> 移动 <i></i>
+        <span>W / ↑</span> 跳跃 <i></i>
+        <span>空格</span> 攻击/蓄气 <i></i>
+        <span>Shift</span> 闪冲 <i></i>
+        <span>Q</span> 格挡 <i></i>
+        <span>E</span> 气焰 <i></i>
+        <span>R</span> 重来
+      </div>
+      <button id="startBtn">开 始 探 索</button>
+    </div>
+  </div>
+
+  <div id="clear" class="overlay">
+    <div class="panel">
+      <div class="title small" id="clearTitle">✦ 第一关 · 完成 ✦</div>
+      <div class="time" id="timeText">走了 0.0 秒，抵达了光</div>
+      <div class="btnrow">
+        <button id="retryBtn">再 走 一 次</button>
+        <button id="nextBtn" class="locked" disabled>第二关 · 敬请期待</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="over" class="overlay">
+    <div class="panel">
+      <div class="title small">火把熄灭了</div>
+      <div class="time" id="overTime">水声吞没了微光</div>
+      <div class="btnrow">
+        <button id="retryBtn2">再 试 一 次</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>document.write('<script src="game.js?v=' + Date.now() + '"><\/script>');</script>
+</body>
+</html>
